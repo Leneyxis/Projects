@@ -4,7 +4,7 @@ from tkinter import messagebox
 from PIL import Image
 from PIL import ImageTk
 from pyperclip import copy
-
+import json
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
 def generate_password():
     pass_text.delete(0,END)
@@ -36,18 +36,46 @@ def generate_password():
 
 # ---------------------------- SAVE PASSWORD ------------------------------- #
 def details():
-    a=web_text.get()
-    b=em_text.get()
-    c=pass_text.get()
-    if len(a) == 0 or len(c) ==0:
+    website=web_text.get()
+    email=em_text.get()
+    password=pass_text.get()
+    new_data={
+        website: {
+            "email":email,
+            "password":password,
+        }
+    }
+    if len(website) == 0 or len(password) ==0:
         pop=messagebox.showerror(title="Oops", message="Don't leave any fields empty")
         return
-    is_ok=messagebox.askokcancel(title=a, message=f"These are the details entered: \n{b}\n{c}\n Do you want to save?")
+    is_ok=messagebox.askokcancel(title=website, message=f"These are the details entered: \n{email}\n{password}\n Do you want to save?")
     if is_ok:
-        with open("password.txt",'a') as f:
-            f.write(f"{a}||{b}||{c}\n")
-            web_text.delete(0,END)
-            pass_text.delete(0,END)
+        try:
+            with open("password.json","r") as data_file:
+                data=json.load(data_file)
+        except FileNotFoundError:
+            with open("password.json","w") as data_file:
+                json.dump(new_data, data_file, indent=4)
+        else:
+            data.update(new_data)
+            with open("password.json","w") as data_file:
+                json.dump(data, data_file,indent=4)
+        web_text.delete(0,END)
+        pass_text.delete(0,END)
+#----------------------------- Search Website ------------------------------------#
+def sear():
+    try:
+        website=web_text.get()
+        with open("password.json","r") as data_file:
+            data=json.load(data_file)
+            email=data[website]["email"]
+            password=data[website]["password"]
+            dis=messagebox.showinfo(title=website, message=f"Email: {email}\n Password: {password}")
+    except KeyError:
+        messagebox.showerror(title="Oops",message="Website not found")
+    finally:
+        return
+
 # ---------------------------- UI SETUP ------------------------------- #
 
 window=Tk()
@@ -59,9 +87,11 @@ canvas.create_image(200,200,image=img)
 canvas.grid(column=1,row=0)
 web=Label(text="Website:")
 web.grid(column=0,row=1,sticky="e")
-web_text=Entry(width=45)
+web_text=Entry(width=30)
 web_text.focus()
 web_text.grid(row=1,column=1,columnspan=2,sticky="w")
+search=Button(text="Search",width=18,command=sear)
+search.grid(column=1,row=1)
 em=Label(text="Email:")
 em.grid(column=0,row=2,sticky="e")
 em_text=Entry(width=45)
