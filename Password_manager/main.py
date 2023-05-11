@@ -1,5 +1,5 @@
 
-from tkinter import *
+from tkinter import * 
 from tkinter import messagebox
 from PIL import Image
 from PIL import ImageTk
@@ -29,7 +29,7 @@ def generate_password():
     password_list=pasword_letters+pasword_numbers+pasword_symbols
     random.shuffle(password_list)
     password = "".join(password_list)
-    copy(password)
+    copy(password) #copies password to clipboard 
     pass_text.insert(0,string=password)
 
 
